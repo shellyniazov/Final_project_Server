@@ -2,6 +2,7 @@ const express = require('express')
 const sql = require('mssql')
 const config = require('../utils/config')
 
+
 let forumRoute = express.Router()
 
 
@@ -26,6 +27,7 @@ forumRoute.get('/', async (req, res) => {
 
 
 
+
 forumRoute.get('/show', async (req, res) => {
 
     try {
@@ -44,12 +46,15 @@ forumRoute.get('/show', async (req, res) => {
 
 
 
+
+
 forumRoute.get('/:id/showCommentsUser', async (req, res) => {
 
     let params = req.params
 
     try {
         let db = await sql.connect(config.db)
+
         let query = await db.request()
             .input('Publish_by', sql.Int, params.id)
             .execute('Select_comment_by_PublishBy')
@@ -64,7 +69,7 @@ forumRoute.get('/:id/showCommentsUser', async (req, res) => {
 
 
 
-
+// הצגת תגובה לפי הקוד הסידורי שלה
 forumRoute.get('/:id', async (req, res) => {
 
     try {
@@ -114,16 +119,39 @@ forumRoute.get('/:id/comments', async (req, res) => {
 
 
 
+// לא השתמשנו
+forumRoute.get('/:id/commentsDeletedByTopic', async (req, res) => {
+
+    try {
+        let params = req.params
+
+        let db = await sql.connect(config.db)
+    
+        let query = await db.request()
+            .input('Topic_number', sql.Int, params.id)
+            .execute('Select_comment_deleted_by_TopicNumber')
+    
+        let data = await query.recordset
+        res.send(data)
+    
+
+    } catch (error) {
+        res.send(error)
+    }
+})
+
+
+
+
 
 
 forumRoute.post('/add', async (req, res) => {
 
     try {
         let body = req.body
-        // טיפול בשגיאות
-        sql.on('error', (error) => res.send(error))
 
         let db = await sql.connect(config.db)
+
         let query = await db.request()
         .input('Topic_number', sql.Int, parseInt(body.Topic_number))
         .input('Comment', sql.NVarChar(150), body.Comment)
@@ -145,15 +173,14 @@ forumRoute.post('/add', async (req, res) => {
 
 
 
+
 forumRoute.put('/update/:id', async (req, res) => {
 
     try {
-        let params = req.params
         let body = req.body
     
-        sql.on('error', (error) => res.send(error))
-    
         let db = await sql.connect(config.db)
+
         let query = await db.request()
         .input('Serial_number', sql.Int, body.Serial_number)
         .input('comment', sql.NVarChar(150), body.comment)
@@ -172,14 +199,15 @@ forumRoute.put('/update/:id', async (req, res) => {
 
 
 
+
+
 forumRoute.delete('/delete/:id', async (req, res) => {
 
     try {
         let params = req.params
-
-        sql.on('error', (error) => res.send(error))
     
         let db = await sql.connect(config.db)
+
         let query = await db.request()
         .input('Serial_code', sql.Int, params.id)
         .execute('delete_comment')
@@ -200,10 +228,9 @@ forumRoute.put('/reactivate/:id', async (req, res) => {
 
     try {
         let params = req.params
-  
-        sql.on('error', (error) => res.send(error))
     
         let db = await sql.connect(config.db)
+        
         let query = await db.request()
         .input('Serial_code', sql.Int, params.id)
         .execute('reactivate_comment')

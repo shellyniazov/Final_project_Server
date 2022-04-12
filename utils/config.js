@@ -1,3 +1,5 @@
+
+// Sql יצירת התחברות עם ה 
 module.exports = {
     db: {
         user: 'db_a779d2_proj3_admin',
@@ -7,8 +9,6 @@ module.exports = {
         options: {
             enableArithAbort: true,
             trustServerCertificate: true
-
         }
     },
-
 }

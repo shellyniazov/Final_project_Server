@@ -2,7 +2,9 @@ const express = require('express')
 const sql = require('mssql')
 const config = require('../utils/config')
 
+
 let forumRoute = express.Router()
+
 
 
 
@@ -24,7 +26,8 @@ forumRoute.get('/', async (req, res) => {
 
 
 
-forumRoute.get('/show', async (req, res) => {
+
+forumRoute.get('/show', async (req, res) => { 
 
     try {
         let db = await sql.connect(config.db)
@@ -52,6 +55,7 @@ forumRoute.get('/:id/showTopicsUser', async (req, res) => {
 
     try {
         let db = await sql.connect(config.db)
+
         let query = await db.request()
             .input('Publish_by', sql.Int, params.id)
             .execute('Select_topic_by_PublishBy')
@@ -66,6 +70,9 @@ forumRoute.get('/:id/showTopicsUser', async (req, res) => {
 
 
 
+
+
+// לדף עדכון אשכול - הצגה של הנתונים הישנים בשדות 
 forumRoute.get('/:id', async (req, res) => {
 
     try {
@@ -89,6 +96,33 @@ forumRoute.get('/:id', async (req, res) => {
 
 
 
+
+// לא השתמשנו
+forumRoute.get('/:id/MainTopicDeleted', async (req, res) => {
+
+    try {
+        let params = req.params
+
+        let db = await sql.connect(config.db)
+
+        let query = await db.request()
+            .input('Serial_code', sql.Int, params.id)
+            .execute('Select_topic_deleted_by_Serialcode')
+
+        let data = await query.recordset
+        res.send(data)
+
+
+    } catch (error) {
+        res.send(error)
+    }
+})
+
+
+
+
+
+//לדף הודעה - הצגת האשכולים עצמם בדף ההודעה
 forumRoute.get('/:id/message', async (req, res) => {
 
     try {
@@ -112,15 +146,14 @@ forumRoute.get('/:id/message', async (req, res) => {
 
 
 
-forumRoute.post('/add', async (req, res) => {
 
+// הוספת אשכול - הודעה
+forumRoute.post('/add', async (req, res) => {
     try {
         let body = req.body
 
-        // טיפול בשגיאות
-        sql.on('error', (error) => res.send(error))
-
         let db = await sql.connect(config.db)
+
         let query = await db.request()
             .input('Category_code', sql.Int, body.Category_code)
             .input('TopicTitle', sql.NVarChar(200), body.TopicTitle)
@@ -142,21 +175,22 @@ forumRoute.post('/add', async (req, res) => {
 
 
 
+
+// עדכון אשכול - הודעה
 forumRoute.put('/update/:id', async (req, res) => {
 
     try {
         let params = req.params
         let body = req.body
 
-        sql.on('error', (error) => res.send(error))
-
         let db = await sql.connect(config.db)
+
         let query = await db.request()
             .input('Serial_code', sql.Int, params.id)
             .input('Category_code', sql.Int, body.Category_code)
-            .input('Topic_title', sql.nvarchar(max), body.Topic_title)
-            .input('Topic_text', sql.NText, body.Topic_text)
-            .input('Date_published', sql.Date, body.Date_published)
+            .input('TopicTitle', sql.NVarChar(200), body.TopicTitle)
+            .input('TopicText', sql.NText, body.TopicText)
+            .input('DatePublished', sql.Date, body.DatePublished)
             .input('Publish_by', sql.Int, body.Publish_by)
             .execute('Update_topics')
 
@@ -166,20 +200,20 @@ forumRoute.put('/update/:id', async (req, res) => {
     } catch (error) {
         res.send(error)
     }
-
 })
 
 
 
 
+
+// מחיקת אשכול לפי מספר סידורי
 forumRoute.delete('/delete/:id', async (req, res) => {
 
     try {
         let params = req.params
 
-        sql.on('error', (error) => res.send(error))
-
         let db = await sql.connect(config.db)
+
         let query = await db.request()
             .input('Serial_code', sql.Int, params.id)
             .execute('Delete_topic')
@@ -195,15 +229,14 @@ forumRoute.delete('/delete/:id', async (req, res) => {
 
 
 
-
+// מלא פעיל לפעיל לפי המספר סידורי 
 forumRoute.put('/reactivate/:id', async (req, res) => {
 
     try {
         let params = req.params
 
-        sql.on('error', (error) => res.send(error))
-
         let db = await sql.connect(config.db)
+        
         let query = await db.request()
             .input('Serial_code', sql.Int, params.id)
             .execute('Reactivate_topic')
